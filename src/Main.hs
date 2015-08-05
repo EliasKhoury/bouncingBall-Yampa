@@ -23,7 +23,7 @@ mainGame p v = proc ctrl -> do
 
 -- Handles mousclick (switches on mouseclick and moves ball)
 game :: Pos -> Vel -> SF Controller (Pos, Vel)
-game p v = switch (bb p v) (\(mouse, vel) -> bouncingBall mouse vel)
+game p v = switch (bb p v) (\(mouse, vel) -> game mouse vel)
     where bb p' v' = proc ctrl -> do
                       (pos, vel) <- bouncingBall p' v' -< ctrl
                       event <- edge -< (controllerClick ctrl)
@@ -37,7 +37,7 @@ fallingBall y0 v0 = proc input -> do
     returnA -< (p,v)
 
 bouncingBall :: Pos -> Vel -> SF Controller (Pos, Vel)
-bouncingBall y0 v0 = switch (bb y0 v0) (\(pos, vel) -> game pos (-vel * 0.8))
+bouncingBall y0 v0 = switch (bb y0 v0) (\(pos, vel) -> bouncingBall pos (-vel * 0.8))
     where bb y0' v0' = proc input -> do
                         (pos, vel) <- fallingBall y0' v0' -< input
                         event <- edge -< snd pos >= 300  
