@@ -27,7 +27,6 @@ game p v = switch (bb p v) (\(mouse, vel) -> bouncingBall mouse vel)
     where bb p' v' = proc ctrl -> do
                       (pos, vel) <- bouncingBall p' v' -< ctrl
                       event <- edge -< (controllerClick ctrl)
-                      --I'm guessing this will tag the mouse pos to the event if the mouse has been clicked
                       returnA -< ((pos, vel), event `tag` ((controllerPos ctrl),vel))
 
 -- Regular ball falling
@@ -38,10 +37,10 @@ fallingBall y0 v0 = proc input -> do
     returnA -< (p,v)
 
 bouncingBall :: Pos -> Vel -> SF Controller (Pos, Vel)
-bouncingBall y0 v0 = switch (bb y0 v0) (\(pos, vel) -> bouncingBall pos (-vel * 0.8))
+bouncingBall y0 v0 = switch (bb y0 v0) (\(pos, vel) -> game pos (-vel * 0.8))
     where bb y0' v0' = proc input -> do
                         (pos, vel) <- fallingBall y0' v0' -< input
-                        event <- edge -< (snd pos) >= 300 
+                        event <- edge -< snd pos >= 300  
                         returnA -< ((pos, vel), event `tag` (pos, vel))
 
 main :: IO () 
@@ -57,7 +56,7 @@ main = do
         (\ _ -> do 
             mInput <- senseInput controllerRef
             dtSecs <- senseTime timeRef mInput
-            return (if controllerPause mInput then 0 else dtSecs, Just mInput)
+            return (if controllerPause mInput then 0 else (dtSecs * 10), Just mInput)
         )
         (\ _ (pos,c) -> do 
                         render pos
